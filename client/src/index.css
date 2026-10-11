@@ -1,0 +1,6 @@
+@import "./styles/palette.css";
+
+body {
+  background-color: var(--color-primary);
+  color: var(--color-text);
+}

@@ -1,0 +1,31 @@
+:root[data-theme="winter"] {
+    --color-primary: #5B6F82;
+    --color-secondary: #A8C0D0;
+    --color-accent: #C97C5D;
+    --color-background: #F5F2ED;
+    --color-text: #263238;
+}
+
+:root[data-theme="spring"] {
+    --color-primary: #6F9F72;
+    --color-secondary: #B8D8BA;
+    --color-accent: #E8A87C;
+    --color-background: #F7F8F1;
+    --color-text: #29352B;
+}
+
+:root[data-theme="summer"] {
+    --color-primary: #E58B4A;
+    --color-secondary: #F4C95D;
+    --color-accent: #5BA6A6;
+    --color-background: #FFF9ED;
+    --color-text: #30343B;
+}
+
+:root[data-theme="fall"] {
+    --color-primary: #A65D3B;
+    --color-secondary: #C58B4E;
+    --color-accent: #6F8061;
+    --color-background: #F7F0E5;
+    --color-text: #382D28;
+}

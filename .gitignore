@@ -1,0 +1,35 @@
+# Dipendenze e build del frontend
+client/node_modules/
+client/dist/
+client/dist-ssr/
+
+# Configurazione locale: conserva gli esempi senza credenziali
+client/.env
+client/.env.*
+!client/.env.example
+server/vendor/
+server/node_modules/
+server/.env
+server/.env.*
+!server/.env.example
+server/storage/*.key
+
+# File generati da Laravel
+server/public/build/
+server/public/hot
+server/public/storage
+server/.phpunit.cache/
+server/.phpunit.result.cache
+server/auth.json
+server/database/*.sqlite
+server/database/*.sqlite-*
+
+# Log e file locali del sistema/editor
+*.log
+*.local
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+*.swp
+*.swo
