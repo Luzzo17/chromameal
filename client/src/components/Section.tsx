@@ -8,7 +8,7 @@ type SelectionProps = {
 function Section({title, children}: SelectionProps) {
     return (
         <section>
-            <header className='section-header'>
+            <header className='section-header shadow'>
                 <h1>{title}</h1>
             </header>
 
