@@ -1,7 +1,8 @@
-import { useState } from 'react'
 import './App.css'
 import Section from './components/Section'
 import MealToday from './components/MealToday'
+import Week from './components/Week'
+import ShoppingList from './components/ShoppingList'
 
 function App() {
 const breakfast = [
@@ -48,14 +49,19 @@ const dinner = [
         
         
         <div id='sidebar'>
-          <Section title='La tua spesa'>
-            <ul></ul>
-          </Section>
+          <ShoppingList ingredients={[...breakfast, ...snack1, ...lunch, ...snack2, ...dinner]} />
 
-        </div>
+
 
       </div>
-
+        </div>
+      <Section title='La tua settimana' fullWidth>
+        <Week
+            renderDay={(dayId) => (
+                <p>Menu del giorno: {dayId}</p>
+            )}
+        />
+      </Section>
     </main>
     )
 }

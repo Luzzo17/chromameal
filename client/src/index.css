@@ -122,3 +122,31 @@ section{
     font-size: 20px; 
   }
 }
+
+.section-content--full-width {
+    padding: 50px 0 0;
+    overflow: hidden;
+}
+
+.week {
+    width: 100%;
+    min-height: 550px;
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.week-day {
+    min-width: 0;
+    padding: 16px;
+    overflow-wrap: anywhere;
+}
+
+.week-day .title-pill--week {
+    width: 100%;
+    max-width: 150px;
+    margin-inline: auto;
+}
+
+.week-day:nth-child(even) {
+    background-color: rgb(from var(--color-secondary) r g b / 20%);
+}
