@@ -6,7 +6,7 @@ type TitlePillProps = {
 function TitlePill ({title, week = false}: TitlePillProps) {
     return (
         <div className={`bg-secondary shadow title-pill ${week ? 'title-pill--week' : ''}`}>
-          <h2>{title}</h2>
+          <h3>{title}</h3>
         </div>
     )
 }

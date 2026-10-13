@@ -42,7 +42,7 @@ body {
 
 main{
   width: calc(100% - 32px);
-  max-width: 1216px;
+  max-width: 1000px;
   margin-inline: auto;
   display: flex;
   flex-direction: column;
@@ -56,7 +56,7 @@ section{
 
 .section-header {
   background-color: var(--color-secondary);
-  height: 104px;
+  height: 90px;
   border-radius: 75px;
   position: relative;
   z-index: 2;
@@ -149,4 +149,47 @@ section{
 
 .week-day:nth-child(even) {
     background-color: rgb(from var(--color-secondary) r g b / 20%);
+}
+
+.profile-icon {
+  width: 60%;
+  height: auto;
+  display: block;
+}
+
+.profile {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  border-radius: 75px;
+  padding: 20px 5px;
+  gap: 12px;
+  margin-bottom: 50px;
+}
+
+a{
+  color: var(--color-text);
+  text-decoration: none;
+  &&:hover{
+    color: var(--color-accent);
+  }
+}
+
+h2,
+.icon-link-title {
+  font-size: 1.5em;
+  font-weight: 700;
+}
+
+.button-style{
+  display: flex;
+  flex-direction: row;
+  height: 90px;
+  width: 100%;
+  border-radius: 75px;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 50px 0;
 }

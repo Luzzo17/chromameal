@@ -3,6 +3,8 @@ import Section from './components/Section'
 import MealToday from './components/MealToday'
 import Week from './components/Week'
 import ShoppingList from './components/ShoppingList'
+import Profile from './components/Profile'
+import IconLink from './components/IconLink'
 
 function App() {
 const breakfast = [
@@ -49,6 +51,8 @@ const dinner = [
         
         
         <div id='sidebar'>
+          <Profile title="Benvenuto {UserName}" />
+          <IconLink title='Le tue ricette' href='#' icon='#'/>
           <ShoppingList ingredients={[...breakfast, ...snack1, ...lunch, ...snack2, ...dinner]} />
 
 
