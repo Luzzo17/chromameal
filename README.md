@@ -12,7 +12,12 @@ Frontend React + TypeScript + Vite in `client`; API Laravel in `server`.
 Vite inoltra `/api` e `/sanctum` a Laravel. Dopo modifiche alla configurazione di Vite, riavvia il frontend.
 `GET /api/health` restituisce lo stato del backend; `/api/user` richiede autenticazione.
 Il client HTTP condiviso è `client/src/lib/api.ts`. Prima del futuro login chiamare `initializeCsrf()`.
-Login e registrazione devono ancora essere implementati.
+La pagina `/account` permette registrazione, login e logout con Fortify e sessioni Sanctum.
+Le rotte Fortify sono `POST /api/auth/register`, `POST /api/auth/login` e
+`POST /api/auth/logout`; il client inizializza prima la protezione CSRF.
+Per provare: apri `http://localhost:5173/account`, registra un account, ricarica la pagina
+per verificare la sessione, quindi esci e accedi nuovamente.
+Le migration aggiuntive per due fattori e passkey non sono necessarie alle funzioni abilitate.
 
 ## Dipendenze e controlli
 

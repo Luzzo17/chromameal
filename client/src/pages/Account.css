@@ -1,0 +1,8 @@
+.account-page { max-width: 480px; gap: 24px; margin-bottom: 48px; }
+.account-card { background: var(--color-background); border-radius: 32px; padding: 32px; display: grid; gap: 20px; }
+.account-card fieldset { border: 0; display: grid; gap: 20px; min-width: 0; }
+.account-card label { display: grid; gap: 8px; }
+.account-card input { width: 100%; padding: 12px; border: 1px solid #777; border-radius: 10px; font: inherit; }
+.account-card button { padding: 12px 18px; border: 1px solid currentColor; border-radius: 12px; background: var(--color-secondary); color: var(--color-text); font: inherit; cursor: pointer; }
+.account-card button:disabled { opacity: .6; cursor: wait; }
+.account-card [role="alert"] { color: #9b1c1c; overflow-wrap: anywhere; }

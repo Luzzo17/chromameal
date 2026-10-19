@@ -11,9 +11,23 @@ export async function apiRequest<T>(path: string, options: RequestInit = {}): Pr
   const response = await fetch(`/api/${path.replace(/^\/+/, '')}`, {
     ...options, headers, credentials: 'include',
   })
-  if (!response.ok) throw new Error(`Richiesta API fallita (${response.status})`)
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    throw new ApiError(response.status, body.message ?? 'Richiesta non riuscita', body.errors ?? {})
+  }
   if (response.status === 204) return undefined as T
   return response.json() as Promise<T>
+}
+
+export class ApiError extends Error {
+  status: number
+  errors: Record<string, string[]>
+
+  constructor(status: number, message: string, errors: Record<string, string[]> = {}) {
+    super(message)
+    this.status = status
+    this.errors = errors
+  }
 }
 
 export async function initializeCsrf(): Promise<void> {
