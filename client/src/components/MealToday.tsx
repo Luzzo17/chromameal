@@ -9,11 +9,15 @@ function MealToday ({title, menu = []}: MealTodayProps) {
     return (
         <div className='meal-recap'>
             <TitlePill title={title} />
-            <ul>
-                {menu.map((item) => (
-                    <li key={item}>{item}</li>
-                ))}
-            </ul>
+                {menu.length === 0 ? (
+                    <p>Nessun alimento pianificato.</p>
+                    ) : (
+                    <ul>
+                        {menu.map((item, index) => (
+                        <li key={`${item}-${index}`}>{item}</li>
+                        ))}
+                    </ul>
+                )}
         </div>
     )
 }

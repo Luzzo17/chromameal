@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { ApiError, apiRequest } from '../lib/api'
-import { signIn, signOut, signUp } from '../lib/auth'
-import type { User } from '../lib/auth'
+import { applyTheme, saveTheme, signIn, signOut, signUp } from '../lib/auth'
+import type { Theme, User } from '../lib/auth'
+import Section from '../components/Section'
 import './Account.css'
 
 export default function Account() {
+  const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
   const [checking, setChecking] = useState(true)
   const [register, setRegister] = useState(false)
@@ -14,12 +16,22 @@ export default function Account() {
   const [error, setError] = useState('')
   const [fields, setFields] = useState<Record<string, string[]>>({})
   const [reload, setReload] = useState(0)
+  const [themeMessage, setThemeMessage] = useState('')
 
   useEffect(() => {
     let active = true
     apiRequest<User>('user')
-      .then(value => { if (active) setUser(value) })
+      .then(value => {
+        if (active) {
+          setUser(value)
+          applyTheme(value.theme)
+        }
+      })
       .catch(reason => {
+        if (active && reason instanceof ApiError && reason.status === 401) {
+          setUser(null)
+          applyTheme('winter')
+        }
         if (active && !(reason instanceof ApiError && reason.status === 401)) {
           setError('Impossibile verificare la sessione. Controlla la connessione e riprova.')
         }
@@ -56,17 +68,42 @@ export default function Account() {
         : await signIn(email, password)
       form.reset()
       setUser(value)
+      applyTheme(value.theme)
+      navigate('/', { replace: true })
     } catch (reason) { showError(reason) }
     finally { setBusy(false) }
+  }
+
+  async function changeTheme(theme: Theme) {
+    if (busy || !user || theme === user.theme) return
+    setBusy(true)
+    setError('')
+    setFields({})
+    setThemeMessage('')
+
+    try {
+      const updatedUser = await saveTheme(theme)
+      setUser(updatedUser)
+      applyTheme(updatedUser.theme)
+      setThemeMessage('Stagione salvata nel tuo account.')
+    } catch (reason) {
+      showError(reason)
+    } finally {
+      setBusy(false)
+    }
   }
 
   async function logout() {
     setBusy(true)
     setError('')
     setFields({})
+    setThemeMessage('')
     try { await signOut(); setUser(null) }
     catch (reason) {
-      if (reason instanceof ApiError && reason.status === 401) setUser(null)
+      if (reason instanceof ApiError && reason.status === 401) {
+        setUser(null)
+        applyTheme('winter')
+      }
       else if (reason instanceof ApiError && reason.status === 419) {
         setChecking(true)
         setReload(value => value + 1)
@@ -78,28 +115,45 @@ export default function Account() {
   return (
     <main className="account-page">
       <Link to="/">← Torna a ChromaMeal</Link>
-      <section className="account-card" aria-busy={checking || busy}>
-        <h1>{checking ? 'Verifica della sessione…' : user ? `Ciao, ${user.name}` : register ? 'Crea il tuo account' : 'Accedi a ChromaMeal'}</h1>
-        {error && <p role="alert">{error}</p>}
-        {Object.entries(fields).map(([field, messages]) => <p role="alert" key={field} id={`error-${field}`}>{messages.join(' ')}</p>)}
+      <Section title={checking ? 'Verifica della sessione…' : user ? `Ciao, ${user.name}` : register ? 'Crea il tuo account' : 'Accedi a ChromaMeal'}>
+      <div className="account-card" aria-busy={checking || busy}>
+        {error && <p className="form-error" role="alert">{error}</p>}
+        {Object.entries(fields).map(([field, messages]) => <p className="form-error" role="alert" key={field} id={`error-${field}`}>{messages.join(' ')}</p>)}
         {!checking && (user ? <>
           <p>{user.email}</p>
-          <button disabled={busy} onClick={logout}>{busy ? 'Uscita in corso…' : 'Esci'}</button>
+          <label htmlFor="account-theme">
+            Stagione
+            <select
+              id="account-theme"
+              className="bg-white"
+              value={user.theme}
+              disabled={busy}
+              onChange={event => void changeTheme(event.target.value as Theme)}
+            >
+              <option value="winter">Inverno</option>
+              <option value="spring">Primavera</option>
+              <option value="summer">Estate</option>
+              <option value="fall">Autunno</option>
+            </select>
+          </label>
+          {themeMessage && <p role="status">{themeMessage}</p>}
+          <button className="action-button bg-secondary" disabled={busy} onClick={logout}>{busy ? 'Uscita in corso…' : 'Esci'}</button>
         </> : <>
           <form onSubmit={submit}>
             <fieldset disabled={busy}>
-              {register && <label>Nome<input name="name" autoComplete="name" required maxLength={255} aria-describedby={fields.name ? 'error-name' : undefined} /></label>}
-              <label>Email<input name="email" type="email" autoComplete="username" required maxLength={255} aria-describedby={fields.email ? 'error-email' : undefined} /></label>
-              <label>Password<input name="password" type="password" autoComplete={register ? 'new-password' : 'current-password'} required minLength={register ? 8 : undefined} aria-describedby={fields.password ? 'error-password' : undefined} /></label>
-              {register && <label>Conferma password<input name="password_confirmation" type="password" autoComplete="new-password" required /></label>}
-              <button type="submit">{busy ? 'Attendi…' : register ? 'Registrati' : 'Accedi'}</button>
+              {register && <label>Nome<input className="bg-white" name="name" autoComplete="name" required maxLength={255} aria-describedby={fields.name ? 'error-name' : undefined} /></label>}
+              <label>Email<input className="bg-white" name="email" type="email" autoComplete="username" required maxLength={255} aria-describedby={fields.email ? 'error-email' : undefined} /></label>
+              <label>Password<input className="bg-white" name="password" type="password" autoComplete={register ? 'new-password' : 'current-password'} required minLength={register ? 8 : undefined} aria-describedby={fields.password ? 'error-password' : undefined} /></label>
+              {register && <label>Conferma password<input className="bg-white" name="password_confirmation" type="password" autoComplete="new-password" required /></label>}
+              <button className="action-button bg-secondary" type="submit">{busy ? 'Attendi…' : register ? 'Registrati' : 'Accedi'}</button>
             </fieldset>
           </form>
-          <button disabled={busy} onClick={() => { setRegister(!register); setError(''); setFields({}) }}>
+          <button className="action-button bg-secondary" disabled={busy} onClick={() => { setRegister(!register); setError(''); setFields({}) }}>
             {register ? 'Hai già un account? Accedi' : 'Non hai un account? Registrati'}
           </button>
         </>)}
-      </section>
+      </div>
+      </Section>
     </main>
   )
 }

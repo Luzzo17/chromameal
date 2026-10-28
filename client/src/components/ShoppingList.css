@@ -3,19 +3,17 @@
     display: flex;
     flex-direction: column;
     --shopping-row-height: 64px;
-    margin: 50px 0;
+    margin: 0 0 50px;
 }
 
 .shopping .section-header {
     flex-shrink: 0;
 }
 
-.shopping-paper {
+.shopping .shopping-paper {
     flex: 1;
     min-height: 546px;
-    margin-top: -50px;
-    padding-top: 50px;
-    border-radius: 0 0 75px 75px;
+    padding: 50px 0 0;
     overflow: hidden;
     background-color: rgb(from var(--color-background) r g b / 95%);
 }
@@ -63,18 +61,28 @@
     cursor: text;
 }
 
-.shopping-label--bought { text-decoration: line-through; }
+.shopping-label--bought {
+    text-decoration: line-through;
+}
 
-.shopping-add, .shopping-edit {
+.shopping-add,
+.shopping-edit {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
     min-width: 0;
 }
 
-.shopping-edit { flex: 1; }
-.shopping-add { padding: 20px 24px 36px; }
-.shopping-add input, .shopping-edit input {
+.shopping-edit {
+    flex: 1;
+}
+
+.shopping-add {
+    padding: 20px 24px 36px;
+}
+
+.shopping-add input,
+.shopping-edit input {
     flex: 1;
     min-width: 0;
     width: 100%;
@@ -85,21 +93,24 @@
     font: inherit;
     color: var(--color-text);
 }
-.shopping-add button, .shopping-edit button, .shopping-delete {
-    padding: 8px;
-    border: 1px solid var(--color-text);
-    border-radius: 8px;
-    background: var(--color-secondary);
-    color: var(--color-text);
-    cursor: pointer;
-}
+
 .shopping-delete {
     flex-shrink: 0;
     font: inherit;
     font-size: 13px;
 }
-.shopping button:focus-visible, .shopping input:focus-visible {
+
+.shopping-feedback {
+    padding: 16px 24px;
+    line-height: 1.5;
+}
+
+.shopping-feedback .action-button {
+    margin-top: 8px;
+}
+
+.shopping button:focus-visible,
+.shopping input:focus-visible {
     outline: 2px solid var(--color-text);
     outline-offset: 3px;
 }
-.shopping button:disabled { opacity: .5; cursor: default; }

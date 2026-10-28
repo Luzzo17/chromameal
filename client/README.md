@@ -1,75 +1,33 @@
-# React + TypeScript + Vite
+# ChromaMeal - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Il frontend utilizza React, TypeScript e Vite. Per la descrizione del progetto consulta il [README principale](../README.md).
 
-Currently, two official plugins are available:
+## Requisiti
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js 22.18 o successivo compatibile con Vite 8.
+- Backend Laravel e MySQL avviati seguendo le [istruzioni del backend](../server/README.md).
 
-## React Compiler
+## Installazione e avvio
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Dalla cartella `client`:
 
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+Apri `http://localhost:5173`. Vite inoltra `/api` e `/sanctum` a `http://127.0.0.1:8000`. Riavvia Vite dopo modifiche alla sua configurazione.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Controlli
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```sh
+npm run lint
+npm run build
+node --test tests/scheduleDates.test.mjs
 ```
+
+La build viene generata in `dist`. I test verificano le conversioni degli orari italiani, compresi i cambi tra ora solare e legale.
+
+## Produzione
+
+La sola cartella `dist` non comprende il backend. L'hosting deve inoltrare `/api` e `/sanctum` a Laravel e servire `index.html` per le rotte frontend, senza intercettare le API. Il proxy configurato in Vite non viene incluso nella build.

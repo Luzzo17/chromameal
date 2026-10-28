@@ -1,123 +1,152 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
+import { Link } from 'react-router'
+import { ApiError } from '../lib/api'
+import { addShoppingItem, deleteShoppingItem, getShoppingItems, updateShoppingItem } from '../lib/shopping'
+import type { ShoppingItem } from '../lib/shopping'
+import Section from './Section'
+import ShoppingIcon from './icons/ShoppingIcon'
 import './ShoppingList.css'
 
-type ShoppingListProps = { ingredients: string[] }
-type SavedList = {
-    edits: Record<string, string>
-    bought: Record<string, boolean>
-    added: { id: string; text: string }[]
-}
-const storageKey = 'chromameal-shopping-v1'
-
-function readList(): SavedList {
-    try {
-        const value = JSON.parse(localStorage.getItem(storageKey) ?? 'null')
-        if (value && typeof value.edits === 'object' && value.edits !== null
-            && typeof value.bought === 'object' && value.bought !== null
-            && Array.isArray(value.added)
-            && value.added.every((item: { id?: unknown; text?: unknown } | null) =>
-                item && typeof item.id === 'string' && typeof item.text === 'string')) {
-            return value as SavedList
-        }
-    } catch { /* Start a fresh list if browser storage is unavailable. */ }
-    return { edits: {}, bought: {}, added: [] }
-}
-
-function ItemText({ text }: { text: string }) {
-    const match = text.match(/^(.*?)\s+(\d.*)$/)
-    return match ? <>{match[1]} <strong>{match[2]}</strong></> : <>{text}</>
-}
-
-export default function ShoppingList({ ingredients }: ShoppingListProps) {
-    const [saved, setSaved] = useState<SavedList>(readList)
-    const [editing, setEditing] = useState<string | null>(null)
+export default function ShoppingList() {
+    const [items, setItems] = useState<ShoppingItem[] | null>(null)
+    const [editing, setEditing] = useState<number | null>(null)
     const [draft, setDraft] = useState('')
+    const [draftQuantity, setDraftQuantity] = useState('')
     const [newItem, setNewItem] = useState('')
-    const [storageError, setStorageError] = useState(false)
-    const items = [...new Set(ingredients.filter((text) => text.trim()))].map((text) => ({
-        id: `meal:${text}`, text,
-    })).concat(saved.added)
+    const [newQuantity, setNewQuantity] = useState('')
+    const [busy, setBusy] = useState(false)
+    const [error, setError] = useState('')
+    const [message, setMessage] = useState('')
+    const [needsLogin, setNeedsLogin] = useState(false)
+    const [attempt, setAttempt] = useState(0)
 
-    function save(next: SavedList) {
-        setSaved(next)
-        try {
-            localStorage.setItem(storageKey, JSON.stringify(next))
-            setStorageError(false)
-        } catch { setStorageError(true) }
-    }
+    useEffect(() => {
+        let active = true
+        getShoppingItems()
+            .then(response => {
+                if (active) { setItems(response.data); setError(''); setNeedsLogin(false) }
+            })
+            .catch(reason => {
+                if (!active) return
+                const unauthorized = reason instanceof ApiError && reason.status === 401
+                setNeedsLogin(unauthorized)
+                if (unauthorized) setItems(null)
+                setError(unauthorized ? 'Accedi per usare la tua lista della spesa.' : 'Impossibile caricare la lista della spesa. Riprova.')
+            })
+        return () => { active = false }
+    }, [attempt])
 
-    function finishEdit(event: FormEvent, id: string) {
-        event.preventDefault()
-        if (!draft.trim()) return
-        save({ ...saved, edits: { ...saved.edits, [id]: draft.trim() } })
-        setEditing(null)
+    async function perform(action: () => Promise<void>) {
+        if (busy) return
+        setBusy(true)
+        setError('')
+        setMessage('')
+        try { await action() }
+        catch (reason) {
+            if (reason instanceof ApiError && (reason.status === 401 || reason.status === 419)) {
+                setNeedsLogin(true)
+                setItems(null)
+                setEditing(null)
+                setError('La sessione è scaduta. Accedi di nuovo per continuare.')
+            } else if (reason instanceof ApiError && reason.status === 422) {
+                setError(Object.values(reason.errors).flat().join(' ') || reason.message)
+            } else {
+                setError('Operazione non riuscita. Ricarica la lista per verificarne lo stato prima di riprovare.')
+            }
+        } finally { setBusy(false) }
     }
 
     function addItem(event: FormEvent) {
         event.preventDefault()
         if (!newItem.trim()) return
-        save({ ...saved, added: [...saved.added, { id: `manual:${crypto.randomUUID()}`, text: newItem.trim() }] })
-        setNewItem('')
+        void perform(async () => {
+            const response = await addShoppingItem(newItem.trim(), newQuantity)
+            setItems(previous => [...(previous ?? []), response.data])
+            setNewItem('')
+            setNewQuantity('')
+            setMessage('Articolo aggiunto e salvato nel tuo account.')
+        })
     }
 
-    function deleteItem(id: string) {
-        const edits = { ...saved.edits }
-        const bought = { ...saved.bought }
-        delete edits[id]
-        delete bought[id]
-        save({ edits, bought, added: saved.added.filter((item) => item.id !== id) })
-        if (editing === id) {
+    function finishEdit(event: FormEvent, id: number) {
+        event.preventDefault()
+        if (!draft.trim()) return
+        void perform(async () => {
+            const response = await updateShoppingItem(id, { name: draft.trim(), quantity: draftQuantity.trim() || null })
+            setItems(previous => previous?.map(item => item.id === id ? response.data : item) ?? [])
             setEditing(null)
-            setDraft('')
-        }
+            setMessage('Articolo aggiornato.')
+        })
+    }
+
+    function toggle(item: ShoppingItem) {
+        void perform(async () => {
+            const response = await updateShoppingItem(item.id, { is_purchased: !item.is_purchased })
+            setItems(previous => previous?.map(value => value.id === item.id ? response.data : value) ?? [])
+            setMessage(response.data.is_purchased ? 'Articolo segnato come acquistato.' : 'Articolo segnato come da acquistare.')
+        })
+    }
+
+    function remove(id: number) {
+        void perform(async () => {
+            await deleteShoppingItem(id)
+            setItems(previous => previous?.filter(item => item.id !== id) ?? [])
+            if (editing === id) setEditing(null)
+            setMessage('Articolo eliminato.')
+        })
     }
 
     return (
-        <section className="shopping" aria-labelledby="shopping-title">
-            <header className="section-header shadow">
-                <h2 id="shopping-title">La tua spesa</h2>
-            </header>
-            <div className="shopping-paper">
-                <ul className="shopping-items">
-                    {items.map(({ id, text }) => {
-                        const label = typeof saved.edits[id] === 'string' ? saved.edits[id] : text
-                        return (
-                            <li className="shopping-row" key={id}>
-                                <input type="checkbox" checked={Boolean(saved.bought[id])}
-                                    aria-label={`Comprato: ${label}`}
-                                    onChange={(event) => save({ ...saved, bought: { ...saved.bought, [id]: event.target.checked } })} />
-                                {editing === id ? (
-                                    <form className="shopping-edit" onSubmit={(event) => finishEdit(event, id)}>
-                                        <input autoFocus aria-label="Modifica articolo" value={draft}
-                                            onChange={(event) => setDraft(event.target.value)}
-                                            onKeyDown={(event) => { if (event.key === 'Escape') setEditing(null) }} />
-                                        <button type="submit">Salva</button>
-                                        <button type="button" onClick={() => setEditing(null)}>Annulla</button>
+        <Section
+            title="La tua spesa"
+            icon={<ShoppingIcon />}
+            className="shopping"
+            contentClassName="shopping-paper"
+            aria-label="La tua spesa"
+            aria-busy={busy}
+        >
+                {error && <div className="shopping-feedback">
+                    <p className="form-error" role="alert">{error}</p>
+                    {needsLogin ? <Link to="/account">Vai al tuo account</Link> : (
+                        <button className="action-button bg-secondary" type="button" disabled={busy} onClick={() => setAttempt(value => value + 1)}>Ricarica la lista</button>
+                    )}
+                </div>}
+                {items === null && !error && <p className="shopping-feedback" role="status">Caricamento lista…</p>}
+                {message && <p className="shopping-feedback" role="status">{message}</p>}
+                {items !== null && !needsLogin && <>
+                    {items.length === 0 && <p className="shopping-feedback">La tua lista è vuota. Aggiungi il primo articolo.</p>}
+                    <ul className="shopping-items">
+                        {items.map(item => (
+                            <li className="shopping-row" key={item.id}>
+                                <input type="checkbox" checked={item.is_purchased} disabled={busy}
+                                    aria-label={`Comprato: ${item.name}`} onChange={() => toggle(item)} />
+                                {editing === item.id ? (
+                                    <form className="shopping-edit" onSubmit={event => finishEdit(event, item.id)}>
+                                        <input autoFocus aria-label="Modifica articolo" value={draft} required maxLength={255} disabled={busy}
+                                            onChange={event => setDraft(event.target.value)}
+                                            onKeyDown={event => { if (event.key === 'Escape' && !busy) setEditing(null) }} />
+                                        <input aria-label="Modifica quantità" placeholder="Quantità (facoltativa)" value={draftQuantity} maxLength={255} disabled={busy} onChange={event => setDraftQuantity(event.target.value)} />
+                                        <button className="action-button bg-secondary" type="submit" disabled={busy || !draft.trim()}>Salva</button>
+                                        <button className="action-button bg-secondary" type="button" disabled={busy} onClick={() => setEditing(null)}>Annulla</button>
                                     </form>
                                 ) : (
-                                    <button type="button" className={`shopping-label${saved.bought[id] ? ' shopping-label--bought' : ''}`}
-                                        aria-label={`Modifica: ${label}`} onClick={() => { setEditing(id); setDraft(label) }}>
-                                        <ItemText text={label} />
+                                    <button type="button" disabled={busy} className={`shopping-label${item.is_purchased ? ' shopping-label--bought' : ''}`}
+                                        aria-label={`Modifica: ${item.name}`} onClick={() => { setEditing(item.id); setDraft(item.name); setDraftQuantity(item.quantity ?? '') }}>
+                                        {item.name}{item.quantity && <> <strong>{item.quantity}</strong></>}
                                     </button>
                                 )}
-                                {id.startsWith('manual:') && (
-                                    <button type="button" className="shopping-delete"
-                                        aria-label={`Elimina: ${label}`} onClick={() => deleteItem(id)}>
-                                        Elimina
-                                    </button>
-                                )}
+                                <button type="button" disabled={busy} className="shopping-delete action-button bg-secondary"
+                                    aria-label={`Elimina: ${item.name}`} onClick={() => remove(item.id)}>Elimina</button>
                             </li>
-                        )
-                    })}
-                </ul>
-                <form className="shopping-add" onSubmit={addItem}>
-                    <input aria-label="Nuovo articolo" placeholder="Aggiungi un articolo…" value={newItem}
-                        onChange={(event) => setNewItem(event.target.value)} />
-                    <button type="submit" disabled={!newItem.trim()}>Aggiungi</button>
-                </form>
-                {storageError && <p role="status">Le modifiche restano disponibili solo finché questa pagina è aperta.</p>}
-            </div>
-        </section>
+                        ))}
+                    </ul>
+                    <form className="shopping-add" onSubmit={addItem}>
+                        <input aria-label="Nuovo articolo" placeholder="Aggiungi un articolo…" value={newItem} required maxLength={255} disabled={busy} onChange={event => setNewItem(event.target.value)} />
+                        <input aria-label="Quantità del nuovo articolo" placeholder="Quantità (es. 2 confezioni)" value={newQuantity} maxLength={255} disabled={busy} onChange={event => setNewQuantity(event.target.value)} />
+                        <button className="action-button bg-secondary" type="submit" disabled={busy || !newItem.trim()}>Aggiungi</button>
+                    </form>
+                </>}
+        </Section>
     )
 }

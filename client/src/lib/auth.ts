@@ -1,6 +1,19 @@
 import { apiRequest, initializeCsrf } from './api'
 
-export type User = { id: number; name: string; email: string }
+export type Theme = 'winter' | 'spring' | 'summer' | 'fall'
+export type User = { id: number; name: string; email: string; theme: Theme }
+
+export function applyTheme(theme: Theme) {
+  document.documentElement.dataset.theme = theme
+}
+
+export async function saveTheme(theme: Theme) {
+  await initializeCsrf()
+  return apiRequest<User>('user/theme', {
+    method: 'PATCH',
+    body: JSON.stringify({ theme }),
+  })
+}
 
 export async function signIn(email: string, password: string) {
   await initializeCsrf()
@@ -21,4 +34,5 @@ export async function signUp(name: string, email: string, password: string, conf
 
 export async function signOut() {
   await apiRequest('auth/logout', { method: 'POST' })
+  applyTheme('winter')
 }
