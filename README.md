@@ -62,6 +62,23 @@ Avvia MySQL e il backend Laravel, quindi il frontend Vite. Apri `http://localhos
 
 La live demo richiede il frontend compilato, il backend PHP e un database persistente. Il proxy di Vite funziona soltanto durante lo sviluppo: in produzione `/api` e `/sanctum` devono raggiungere Laravel sullo stesso dominio del frontend. Le pagine `/account` e `/planner` devono inoltre essere raggiungibili anche ricaricando direttamente il loro indirizzo.
 
+Il `Dockerfile` nella radice compila React e lo pubblica insieme a Laravel tramite Apache e PHP 8.5. La configurazione prevista è Render Web Service con Docker e database Neon PostgreSQL; lo sviluppo locale continua a usare MySQL.
+
+Su Render lascia vuota **Root Directory**, scegli **Dockerfile Path: ./Dockerfile**, piano **Free** e **Health Check Path: /up**. Mantieni il comando Docker predefinito. Non sono necessari comandi Build o Start separati.
+
+Configura queste variabili nella sezione Environment di Render:
+
+| Variabile | Valore |
+|---|---|
+| `APP_KEY` | Chiave dedicata alla demo, generata con `php artisan key:generate --show` dentro `server` |
+| `DB_URL` | Stringa PostgreSQL diretta fornita da Neon, completa delle opzioni SSL |
+
+Non aggiungere il prefisso `psql` o le virgolette del comando mostrato da Neon. Il nome usato da questa applicazione è `DB_URL`, non `DATABASE_URL`.
+
+L'immagine imposta ambiente production, debug disattivato, connessione PostgreSQL con SSL, log su stderr e cookie sicuri. All'avvio ricava automaticamente `APP_URL` e `SANCTUM_STATEFUL_DOMAINS` dalle variabili assegnate da Render, applica la configurazione e avvia `php artisan migrate --force` prima del server web. Le migration creano le tabelle mancanti senza importare i dati MySQL locali. La chiave `APP_KEY` deve rimanere invariata nei deploy successivi.
+
+La stringa del database e la chiave vanno conservate nelle variabili segrete di Render. `.dockerignore` esclude configurazioni locali, credenziali, database locali e dipendenze installate dal contesto Docker.
+
 Il link pubblico sarà inserito all'inizio di questo README quando il sito sarà online.
 
 # Sviluppi futuri
