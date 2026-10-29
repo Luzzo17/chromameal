@@ -1,6 +1,6 @@
 # ChromaMeal - Progetto Finale Full Stack
 
-Live Demo: in preparazione. Il link sarà aggiunto dopo la pubblicazione.
+Live Demo: https://chromameal.onrender.com
 
 # Descrizione
 
@@ -47,7 +47,8 @@ Database: MySQL conserva utenti, pasti, turni e impegni, lista della spesa e ses
 - Laravel Fortify
 - Laravel Sanctum
 - Eloquent ORM
-- MySQL
+- MySQL (local)
+- Neon PostgreSQL (online)
 - Open Food Facts API
 - PHPUnit
 - Node.js Test Runner
