@@ -1,159 +1,287 @@
-import { useEffect, useState } from 'react'
-import type { FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
-import { ApiError, apiRequest } from '../lib/api'
-import { applyTheme, saveTheme, signIn, signOut, signUp } from '../lib/auth'
-import type { Theme, User } from '../lib/auth'
-import Section from '../components/Section'
-import './Account.css'
+import { useEffect, useState } from "react";
+import type { FormEvent } from "react";
+import { Link, useNavigate } from "react-router";
+import { ApiError, apiRequest } from "../lib/api";
+import {
+  applyTheme,
+  isTheme,
+  saveTheme,
+  signIn,
+  signOut,
+  signUp,
+} from "../lib/auth";
+import type { Theme, User } from "../lib/auth";
+import Section from "../components/Section";
+import "./Account.css";
 
 export default function Account() {
-  const navigate = useNavigate()
-  const [user, setUser] = useState<User | null>(null)
-  const [checking, setChecking] = useState(true)
-  const [register, setRegister] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState('')
-  const [fields, setFields] = useState<Record<string, string[]>>({})
-  const [reload, setReload] = useState(0)
-  const [themeMessage, setThemeMessage] = useState('')
+  const navigate = useNavigate();
+  const [user, setUser] = useState<User | null>(null);
+  const [checking, setChecking] = useState(true);
+  const [register, setRegister] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [fields, setFields] = useState<Record<string, string[]>>({});
+  const [reload, setReload] = useState(0);
+  const [themeMessage, setThemeMessage] = useState("");
 
   useEffect(() => {
-    let active = true
-    apiRequest<User>('user')
-      .then(value => {
+    let active = true;
+    apiRequest<User>("user")
+      .then((value) => {
         if (active) {
-          setUser(value)
-          applyTheme(value.theme)
+          setUser(value);
+          applyTheme(value.theme);
         }
       })
-      .catch(reason => {
+      .catch((reason) => {
         if (active && reason instanceof ApiError && reason.status === 401) {
-          setUser(null)
-          applyTheme('winter')
+          setUser(null);
+          applyTheme("winter");
         }
         if (active && !(reason instanceof ApiError && reason.status === 401)) {
-          setError('Impossibile verificare la sessione. Controlla la connessione e riprova.')
+          setError(
+            "Impossibile verificare la sessione. Controlla la connessione e riprova.",
+          );
         }
       })
-      .finally(() => { if (active) setChecking(false) })
-    return () => { active = false }
-  }, [reload])
+      .finally(() => {
+        if (active) setChecking(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [reload]);
 
   function showError(reason: unknown) {
     if (reason instanceof ApiError && reason.status === 422) {
-      setFields(reason.errors)
-      setError('Controlla i dati inseriti.')
+      setFields(reason.errors);
+      setError("Controlla i dati inseriti.");
     } else if (reason instanceof ApiError && reason.status === 419) {
-      setError('La sessione è scaduta. Riprova.')
+      setError("La sessione è scaduta. Riprova.");
     } else if (reason instanceof ApiError && reason.status === 429) {
-      setError('Troppi tentativi. Attendi un minuto e riprova.')
+      setError("Troppi tentativi. Attendi un minuto e riprova.");
     } else {
-      setError('Operazione non riuscita. Controlla la connessione e riprova.')
+      setError("Operazione non riuscita. Controlla la connessione e riprova.");
     }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault()
-    const form = event.currentTarget
-    const data = new FormData(form)
-    setBusy(true)
-    setError('')
-    setFields({})
+    event.preventDefault();
+    const form = event.currentTarget;
+    const data = new FormData(form);
+    setBusy(true);
+    setError("");
+    setFields({});
     try {
-      const email = String(data.get('email'))
-      const password = String(data.get('password'))
+      const email = String(data.get("email"));
+      const password = String(data.get("password"));
       const value = register
-        ? await signUp(String(data.get('name')), email, password, String(data.get('password_confirmation')))
-        : await signIn(email, password)
-      form.reset()
-      setUser(value)
-      applyTheme(value.theme)
-      navigate('/', { replace: true })
-    } catch (reason) { showError(reason) }
-    finally { setBusy(false) }
+        ? await signUp(
+            String(data.get("name")),
+            email,
+            password,
+            String(data.get("password_confirmation")),
+          )
+        : await signIn(email, password);
+      form.reset();
+      setUser(value);
+      applyTheme(value.theme);
+      navigate("/", { replace: true });
+    } catch (reason) {
+      showError(reason);
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function changeTheme(theme: Theme) {
-    if (busy || !user || theme === user.theme) return
-    setBusy(true)
-    setError('')
-    setFields({})
-    setThemeMessage('')
+    if (busy || !user || theme === user.theme) return;
+    setBusy(true);
+    setError("");
+    setFields({});
+    setThemeMessage("");
 
     try {
-      const updatedUser = await saveTheme(theme)
-      setUser(updatedUser)
-      applyTheme(updatedUser.theme)
-      setThemeMessage('Stagione salvata nel tuo account.')
+      const updatedUser = await saveTheme(theme);
+      setUser(updatedUser);
+      applyTheme(updatedUser.theme);
+      setThemeMessage("Stagione salvata nel tuo account.");
     } catch (reason) {
-      showError(reason)
+      showError(reason);
     } finally {
-      setBusy(false)
+      setBusy(false);
     }
   }
 
   async function logout() {
-    setBusy(true)
-    setError('')
-    setFields({})
-    setThemeMessage('')
-    try { await signOut(); setUser(null) }
-    catch (reason) {
+    setBusy(true);
+    setError("");
+    setFields({});
+    setThemeMessage("");
+    try {
+      await signOut();
+      setUser(null);
+    } catch (reason) {
       if (reason instanceof ApiError && reason.status === 401) {
-        setUser(null)
-        applyTheme('winter')
-      }
-      else if (reason instanceof ApiError && reason.status === 419) {
-        setChecking(true)
-        setReload(value => value + 1)
-      } else showError(reason)
+        setUser(null);
+        applyTheme("winter");
+      } else if (reason instanceof ApiError && reason.status === 419) {
+        setChecking(true);
+        setReload((value) => value + 1);
+      } else showError(reason);
+    } finally {
+      setBusy(false);
     }
-    finally { setBusy(false) }
   }
 
   return (
     <main className="account-page">
       <Link to="/">← Torna a ChromaMeal</Link>
-      <Section title={checking ? 'Verifica della sessione…' : user ? `Ciao, ${user.name}` : register ? 'Crea il tuo account' : 'Accedi a ChromaMeal'}>
-      <div className="account-card" aria-busy={checking || busy}>
-        {error && <p className="form-error" role="alert">{error}</p>}
-        {Object.entries(fields).map(([field, messages]) => <p className="form-error" role="alert" key={field} id={`error-${field}`}>{messages.join(' ')}</p>)}
-        {!checking && (user ? <>
-          <p>{user.email}</p>
-          <label htmlFor="account-theme">
-            Stagione
-            <select
-              id="account-theme"
-              className="bg-white"
-              value={user.theme}
-              disabled={busy}
-              onChange={event => void changeTheme(event.target.value as Theme)}
+      <Section
+        title={
+          checking
+            ? "Verifica della sessione…"
+            : user
+              ? `Ciao, ${user.name}`
+              : register
+                ? "Crea il tuo account"
+                : "Accedi a ChromaMeal"
+        }
+      >
+        <div className="account-card" aria-busy={checking || busy}>
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
+          {Object.entries(fields).map(([field, messages]) => (
+            <p
+              className="form-error"
+              role="alert"
+              key={field}
+              id={`error-${field}`}
             >
-              <option value="winter">Inverno</option>
-              <option value="spring">Primavera</option>
-              <option value="summer">Estate</option>
-              <option value="fall">Autunno</option>
-            </select>
-          </label>
-          {themeMessage && <p role="status">{themeMessage}</p>}
-          <button className="action-button bg-secondary" disabled={busy} onClick={logout}>{busy ? 'Uscita in corso…' : 'Esci'}</button>
-        </> : <>
-          <form onSubmit={submit}>
-            <fieldset disabled={busy}>
-              {register && <label>Nome<input className="bg-white" name="name" autoComplete="name" required maxLength={255} aria-describedby={fields.name ? 'error-name' : undefined} /></label>}
-              <label>Email<input className="bg-white" name="email" type="email" autoComplete="username" required maxLength={255} aria-describedby={fields.email ? 'error-email' : undefined} /></label>
-              <label>Password<input className="bg-white" name="password" type="password" autoComplete={register ? 'new-password' : 'current-password'} required minLength={register ? 8 : undefined} aria-describedby={fields.password ? 'error-password' : undefined} /></label>
-              {register && <label>Conferma password<input className="bg-white" name="password_confirmation" type="password" autoComplete="new-password" required /></label>}
-              <button className="action-button bg-secondary" type="submit">{busy ? 'Attendi…' : register ? 'Registrati' : 'Accedi'}</button>
-            </fieldset>
-          </form>
-          <button className="action-button bg-secondary" disabled={busy} onClick={() => { setRegister(!register); setError(''); setFields({}) }}>
-            {register ? 'Hai già un account? Accedi' : 'Non hai un account? Registrati'}
-          </button>
-        </>)}
-      </div>
+              {messages.join(" ")}
+            </p>
+          ))}
+          {!checking &&
+            (user ? (
+              <>
+                <p>{user.email}</p>
+                <label htmlFor="account-theme">
+                  Stagione
+                  <select
+                    id="account-theme"
+                    className="bg-white"
+                    value={user.theme}
+                    disabled={busy}
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      if (isTheme(value)) void changeTheme(value);
+                    }}
+                  >
+                    <option value="winter">Inverno</option>
+                    <option value="spring">Primavera</option>
+                    <option value="summer">Estate</option>
+                    <option value="fall">Autunno</option>
+                  </select>
+                </label>
+                {themeMessage && <p role="status">{themeMessage}</p>}
+                <button
+                  className="action-button bg-secondary"
+                  disabled={busy}
+                  onClick={logout}
+                >
+                  {busy ? "Uscita in corso…" : "Esci"}
+                </button>
+              </>
+            ) : (
+              <>
+                <form onSubmit={submit}>
+                  <fieldset disabled={busy}>
+                    {register && (
+                      <label>
+                        Nome
+                        <input
+                          className="bg-white"
+                          name="name"
+                          autoComplete="name"
+                          required
+                          maxLength={255}
+                          aria-describedby={
+                            fields.name ? "error-name" : undefined
+                          }
+                        />
+                      </label>
+                    )}
+                    <label>
+                      Email
+                      <input
+                        className="bg-white"
+                        name="email"
+                        type="email"
+                        autoComplete="username"
+                        required
+                        maxLength={255}
+                        aria-describedby={
+                          fields.email ? "error-email" : undefined
+                        }
+                      />
+                    </label>
+                    <label>
+                      Password
+                      <input
+                        className="bg-white"
+                        name="password"
+                        type="password"
+                        autoComplete={
+                          register ? "new-password" : "current-password"
+                        }
+                        required
+                        minLength={register ? 8 : undefined}
+                        aria-describedby={
+                          fields.password ? "error-password" : undefined
+                        }
+                      />
+                    </label>
+                    {register && (
+                      <label>
+                        Conferma password
+                        <input
+                          className="bg-white"
+                          name="password_confirmation"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                        />
+                      </label>
+                    )}
+                    <button
+                      className="action-button bg-secondary"
+                      type="submit"
+                    >
+                      {busy ? "Attendi…" : register ? "Registrati" : "Accedi"}
+                    </button>
+                  </fieldset>
+                </form>
+                <button
+                  className="action-button bg-secondary"
+                  disabled={busy}
+                  onClick={() => {
+                    setRegister(!register);
+                    setError("");
+                    setFields({});
+                  }}
+                >
+                  {register
+                    ? "Hai già un account? Accedi"
+                    : "Non hai un account? Registrati"}
+                </button>
+              </>
+            ))}
+        </div>
       </Section>
     </main>
-  )
+  );
 }

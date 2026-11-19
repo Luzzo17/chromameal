@@ -24,11 +24,11 @@ class MealItem extends Model
     {
         return [
             'date' => 'immutable_date:Y-m-d',
-            'quantity_g' => 'decimal:2',
-            'calories_per_100g' => 'decimal:3',
-            'carbohydrates_per_100g' => 'decimal:3',
-            'proteins_per_100g' => 'decimal:3',
-            'fat_per_100g' => 'decimal:3',
+            'quantity_g' => 'float',
+            'calories_per_100g' => 'float',
+            'carbohydrates_per_100g' => 'float',
+            'proteins_per_100g' => 'float',
+            'fat_per_100g' => 'float',
         ];
     }
 

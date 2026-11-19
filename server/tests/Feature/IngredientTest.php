@@ -14,7 +14,6 @@ class IngredientTest extends TestCase
     {
         return [
             'name' => 'Spaghetti',
-            'source' => 'manual',
             'calories' => 359,
             'carbohydrates' => 71,
             'proteins' => 13,
@@ -53,10 +52,9 @@ class IngredientTest extends TestCase
                 'carbohydrates' => -1,
                 'proteins' => 101,
                 'fat' => 1.1234,
-                'source' => 'unknown',
             ])
             ->assertUnprocessable()
-            ->assertJsonValidationErrors(['calories', 'carbohydrates', 'proteins', 'fat', 'source']);
+            ->assertJsonValidationErrors(['calories', 'carbohydrates', 'proteins', 'fat']);
 
         $this->assertDatabaseCount('ingredients', 0);
     }
@@ -66,11 +64,44 @@ class IngredientTest extends TestCase
         $this->actingAs(User::factory()->create(), 'web')
             ->postJson('/api/ingredients', [
                 ...$this->ingredient(),
-                'source' => 'open_food_facts',
                 'barcode' => '0089686120073',
                 'brand' => 'Example',
             ])
             ->assertCreated()
-            ->assertJsonPath('data.barcode', '0089686120073');
+            ->assertJsonPath('data.barcode', '0089686120073')
+            ->assertJsonPath('data.source', 'open_food_facts');
+    }
+
+    public function test_source_is_inferred_by_the_server_and_cannot_be_forged(): void
+    {
+        $this->actingAs(User::factory()->create(), 'web')
+            ->postJson('/api/ingredients', [
+                ...$this->ingredient(),
+                'source' => 'open_food_facts',
+            ])
+            ->assertCreated()
+            ->assertJsonPath('data.source', 'manual');
+    }
+
+    public function test_barcode_is_unique_per_user_but_can_be_saved_by_another_user(): void
+    {
+        $owner = User::factory()->create();
+        $payload = [...$this->ingredient(), 'barcode' => '123456'];
+        $this->actingAs($owner, 'web')->postJson('/api/ingredients', $payload)->assertCreated();
+        $this->postJson('/api/ingredients', $payload)
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('barcode');
+    }
+
+    public function test_another_user_can_save_the_same_barcode(): void
+    {
+        $owner = User::factory()->create();
+        $payload = [...$this->ingredient(), 'barcode' => '123456'];
+        $this->actingAs($owner, 'web')->postJson('/api/ingredients', $payload)->assertCreated();
+
+        $other = User::factory()->create();
+        $this->actingAs($other, 'sanctum')->assertAuthenticatedAs($other, 'sanctum')
+            ->postJson('/api/ingredients', $payload)
+            ->assertCreated();
     }
 }

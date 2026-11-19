@@ -26,11 +26,11 @@ class PlannerStorageTest extends TestCase
 
         $this->assertSame('2026-10-20', $item->toArray()['date']);
         $this->assertSame('0012345678901', $item->barcode);
-        $this->assertSame('80.50', $item->quantity_g);
-        $this->assertSame('359.000', $item->calories_per_100g);
+        $this->assertSame(80.5, $item->quantity_g);
+        $this->assertSame(359.0, $item->calories_per_100g);
         $this->assertNull($item->carbohydrates_per_100g);
         $this->assertNull($item->proteins_per_100g);
-        $this->assertSame('0.000', $item->fat_per_100g);
+        $this->assertSame(0.0, $item->fat_per_100g);
         $this->assertTrue($item->user->is($user));
         $this->assertDatabaseCount('ingredients', 0);
     }

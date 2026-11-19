@@ -1,32 +1,32 @@
 .account-page {
-    max-width: 480px;
-    gap: 24px;
-    margin-bottom: 48px;
+  max-width: 480px;
+  gap: 24px;
+  margin-bottom: 48px;
 }
 
 .account-card {
-    display: grid;
-    gap: 20px;
+  display: grid;
+  gap: 20px;
 }
 
 .account-card fieldset {
-    border: 0;
-    display: grid;
-    gap: 20px;
-    min-width: 0;
+  border: 0;
+  display: grid;
+  gap: 20px;
+  min-width: 0;
 }
 
 .account-card label {
-    display: grid;
-    gap: 8px;
+  display: grid;
+  gap: 8px;
 }
 
 .account-card input,
 .account-card select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #777;
-    border-radius: 10px;
-    font: inherit;
-    color: var(--color-text);
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #777;
+  border-radius: 10px;
+  font: inherit;
+  color: var(--color-text);
 }

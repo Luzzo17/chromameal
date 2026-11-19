@@ -1,116 +1,119 @@
 .shopping {
-    min-height: 600px;
-    display: flex;
-    flex-direction: column;
-    --shopping-row-height: 64px;
-    margin: 0 0 50px;
+  min-height: 600px;
+  display: flex;
+  flex-direction: column;
+  --shopping-row-height: 64px;
+  margin: 0 0 50px;
 }
 
 .shopping .section-header {
-    flex-shrink: 0;
+  flex-shrink: 0;
 }
 
 .shopping .shopping-paper {
-    flex: 1;
-    min-height: 546px;
-    padding: 50px 0 0;
-    overflow: hidden;
-    background-color: rgb(from var(--color-background) r g b / 95%);
+  flex: 1;
+  min-height: 546px;
+  padding: 50px 0 0;
+  overflow: hidden;
+  background-color: rgb(from var(--color-background) r g b / 95%);
 }
 
 .shopping-items {
-    list-style: none;
+  list-style: none;
 }
 
 .shopping-items::after {
-    content: '';
-    display: block;
-    height: 128px;
-    background-image: repeating-linear-gradient(to bottom,
-        transparent 0, transparent calc(var(--shopping-row-height) - 1px),
-        var(--color-text) calc(var(--shopping-row-height) - 1px),
-        var(--color-text) var(--shopping-row-height));
+  content: "";
+  display: block;
+  height: 128px;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent calc(var(--shopping-row-height) - 1px),
+    var(--color-text) calc(var(--shopping-row-height) - 1px),
+    var(--color-text) var(--shopping-row-height)
+  );
 }
 
 .shopping-row {
-    min-height: var(--shopping-row-height);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 12px 24px;
-    border-bottom: 1px solid var(--color-text);
+  min-height: var(--shopping-row-height);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--color-text);
 }
 
 .shopping-row > input {
-    flex-shrink: 0;
-    accent-color: var(--color-primary);
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 }
 
 .shopping-label {
-    flex: 1;
-    background: none;
-    border: 0;
-    text-align: left;
-    font: inherit;
-    font-size: 20px;
-    color: var(--color-text);
-    overflow-wrap: anywhere;
-    cursor: text;
+  flex: 1;
+  background: none;
+  border: 0;
+  text-align: left;
+  font: inherit;
+  font-size: 20px;
+  color: var(--color-text);
+  overflow-wrap: anywhere;
+  cursor: text;
 }
 
 .shopping-label--bought {
-    text-decoration: line-through;
+  text-decoration: line-through;
 }
 
 .shopping-add,
 .shopping-edit {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
 }
 
 .shopping-edit {
-    flex: 1;
+  flex: 1;
 }
 
 .shopping-add {
-    padding: 20px 24px 36px;
+  padding: 20px 24px 36px;
 }
 
 .shopping-add input,
 .shopping-edit input {
-    flex: 1;
-    min-width: 0;
-    width: 100%;
-    padding: 8px;
-    border: 1px solid var(--color-text);
-    border-radius: 8px;
-    background: transparent;
-    font: inherit;
-    color: var(--color-text);
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--color-text);
+  border-radius: 8px;
+  background: transparent;
+  font: inherit;
+  color: var(--color-text);
 }
 
 .shopping-delete {
-    flex-shrink: 0;
-    font: inherit;
-    font-size: 13px;
+  flex-shrink: 0;
+  font: inherit;
+  font-size: 13px;
 }
 
 .shopping-feedback {
-    padding: 16px 24px;
-    line-height: 1.5;
+  padding: 16px 24px;
+  line-height: 1.5;
 }
 
 .shopping-feedback .action-button {
-    margin-top: 8px;
+  margin-top: 8px;
 }
 
 .shopping button:focus-visible,
 .shopping input:focus-visible {
-    outline: 2px solid var(--color-text);
-    outline-offset: 3px;
+  outline: 2px solid var(--color-text);
+  outline-offset: 3px;
 }

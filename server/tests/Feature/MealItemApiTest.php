@@ -40,8 +40,8 @@ class MealItemApiTest extends TestCase
         ])->assertCreated();
 
         $response->assertJsonPath('data.user_id', $owner->id)
-            ->assertJsonPath('data.quantity_g', '80.00')
-            ->assertJsonPath('data.fat_per_100g', '0.000')
+            ->assertJsonPath('data.quantity_g', 80)
+            ->assertJsonPath('data.fat_per_100g', 0)
             ->assertJsonPath('data.calories_per_100g', null);
         $this->assertDatabaseHas('meal_items', ['user_id' => $owner->id, 'food_name' => 'Spaghetti']);
         $this->assertDatabaseMissing('meal_items', ['user_id' => $other->id]);
@@ -97,12 +97,12 @@ class MealItemApiTest extends TestCase
             'quantity_g' => 120.5,
             'food_name' => 'Tampered',
             'calories_per_100g' => 0,
-        ])->assertOk()->assertJsonPath('data.quantity_g', '120.50')
+        ])->assertOk()->assertJsonPath('data.quantity_g', 120.5)
             ->assertJsonPath('data.food_name', 'Spaghetti')
-            ->assertJsonPath('data.calories_per_100g', '359.000');
+            ->assertJsonPath('data.calories_per_100g', 359);
 
         $this->getJson('/api/meal-items?from=2026-10-20&to=2026-10-20')
-            ->assertOk()->assertJsonPath('data.0.quantity_g', '120.50');
+            ->assertOk()->assertJsonPath('data.0.quantity_g', 120.5);
         $this->deleteJson('/api/meal-items/'.$item->id)->assertNoContent();
         $this->assertDatabaseMissing('meal_items', ['id' => $item->id]);
     }

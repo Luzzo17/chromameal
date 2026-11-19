@@ -21,10 +21,10 @@ class Ingredient extends Model
     protected function casts(): array
     {
         return [
-            'calories' => 'decimal:3',
-            'carbohydrates' => 'decimal:3',
-            'proteins' => 'decimal:3',
-            'fat' => 'decimal:3',
+            'calories' => 'float',
+            'carbohydrates' => 'float',
+            'proteins' => 'float',
+            'fat' => 'float',
         ];
     }
 
